@@ -64,8 +64,6 @@ compress_file() {
     local compression_percentage
     local json_result
 
-    trap '_trap_DEBUG' DEBUG
-
     output_file="${temp_dir}/$(basename "$file").${algorithm}"
 
     if [ "$algorithm" = "bz2" ]; then
@@ -144,8 +142,6 @@ decompress_file() {
     local max_mem
     local json_result
 
-    trap '_trap_DEBUG' DEBUG
-
     output_file="${temp_dir}/decompressed_$(basename "$compressed_file")"
 
     if [ "$algorithm" = "bz2" ]; then
@@ -201,8 +197,6 @@ test_compression_algorithms() {
     local output_file
     local decompression_result
     local level_results
-
-    trap '_trap_DEBUG' DEBUG
 
     temp_dir=$(mktemp -d)
     filename=$(basename "$file")
@@ -260,8 +254,6 @@ main() {
     local output_json
     local file_results
     local output_file
-
-    trap '_trap_DEBUG' ERR
 
     # Check for required tools
     check_requirements
