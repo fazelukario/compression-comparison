@@ -261,7 +261,7 @@ main() {
     local file_results
     local output_file
 
-    trap '_trap_DEBUG' DEBUG
+    trap '_trap_DEBUG' ERR
 
     # Check for required tools
     check_requirements
@@ -306,7 +306,7 @@ function _trap_DEBUG() {
     done
 }
 
-trap '_trap_DEBUG' DEBUG
+trap '_trap_DEBUG' ERR
 
 # Run main function with all arguments
 main "$@"
