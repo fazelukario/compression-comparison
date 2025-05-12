@@ -72,9 +72,9 @@ compress_file() {
     elif [ "$algorithm" = "gz" ]; then
         time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -k -c -"$level" "$file" > "$output_file" 2>&1)
     elif [ "$algorithm" = "lz4" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -k -"$level" "$file" "$output_file" 2>&1)
+        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -k -c -"$level" "$file" > "$output_file" 2>&1)
     elif [ "$algorithm" = "zstd" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -k -"$level" "$file" "$output_file" 2>&1)
+        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -k -c -"$level" "$file" > "$output_file" 2>&1)
     else
         echo "Unknown algorithm: $algorithm"
         exit 1
@@ -95,25 +95,34 @@ compress_file() {
     # Calculate compression ratio and percentage
     read -r compression_ratio compression_percentage compressed_percentage < <(calculate_compression_stats "$original_size" "$compressed_size")
 
-    # Result in JSON format
-    json_result=$(
-        cat << EOF
-{
-    "originalSize": $original_size,
-    "compressedSize": $compressed_size,
-    "compressionRatio": $compression_ratio,
-    "compressionPercentage": "$compression_percentage",
-    "compressedPercentage": "$compressed_percentage",
-    "real": "$real_time",
-    "CPU": "$cpu_percentage",
-    "max": $max_mem,
-    "avg": $avg_mem,
-    "sys": $sys_time,
-    "user": $user_time,
-    "outputFile": "$output_file"
-}
-EOF
-    )
+    # Result in JSON format - using jq to ensure proper JSON escaping
+    json_result=$(jq -n \
+        --arg orig_size "$original_size" \
+        --arg comp_size "$compressed_size" \
+        --arg comp_ratio "$compression_ratio" \
+        --arg comp_perc "$compression_percentage" \
+        --arg comp_size_perc "$compressed_percentage" \
+        --arg real "$real_time" \
+        --arg cpu "$cpu_percentage" \
+        --arg max "$max_mem" \
+        --arg avg "$avg_mem" \
+        --arg sys "$sys_time" \
+        --arg user "$user_time" \
+        --arg output "$output_file" \
+        '{
+            originalSize: ($orig_size | tonumber),
+            compressedSize: ($comp_size | tonumber),
+            compressionRatio: ($comp_ratio | tonumber),
+            compressionPercentage: $comp_perc,
+            compressedPercentage: $comp_size_perc,
+            real: $real,
+            CPU: $cpu,
+            max: ($max | tonumber),
+            avg: ($avg | tonumber),
+            sys: ($sys | tonumber),
+            user: ($user | tonumber),
+            outputFile: $output
+        }')
 
     echo "$json_result"
 }
@@ -140,9 +149,9 @@ decompress_file() {
     elif [ "$algorithm" = "gz" ]; then
         time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -d -c "$compressed_file" > "$output_file" 2>&1)
     elif [ "$algorithm" = "lz4" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -d "$compressed_file" "$output_file" 2>&1)
+        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -d -c "$compressed_file" > "$output_file" 2>&1)
     elif [ "$algorithm" = "zstd" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -d "$compressed_file" "$output_file" 2>&1)
+        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -d -c "$compressed_file" > "$output_file" 2>&1)
     else
         echo "Unknown algorithm: $algorithm"
         exit 1
@@ -157,18 +166,21 @@ decompress_file() {
     max_mem=$(echo "$time_output" | awk '{print $6}')
 
     # Result in JSON format
-    json_result=$(
-        cat << EOF
-{
-    "real": "$real_time",
-    "CPU": "$cpu_percentage",
-    "max": $max_mem,
-    "avg": $avg_mem,
-    "sys": $sys_time,
-    "user": $user_time
-}
-EOF
-    )
+    json_result=$(jq -n \
+        --arg real "$real_time" \
+        --arg cpu "$cpu_percentage" \
+        --arg max "$max_mem" \
+        --arg avg "$avg_mem" \
+        --arg sys "$sys_time" \
+        --arg user "$user_time" \
+        '{
+            real: $real,
+            CPU: $cpu,
+            max: ($max | tonumber),
+            avg: ($avg | tonumber),
+            sys: ($sys | tonumber),
+            user: ($user | tonumber)
+        }')
 
     echo "$json_result"
 }
@@ -207,28 +219,27 @@ test_compression_algorithms() {
         for level in ${algorithms[$algorithm]}; do
             echo "    Compression level: $level"
 
-            # Get compression results
+            # Get compression results (ensure we get clean JSON outputs)
             compression_result=$(compress_file "$file" "$algorithm" "$level" "$temp_dir")
             output_file=$(echo "$compression_result" | jq -r '.outputFile')
 
-            # Get decompression results
+            # Get decompression results (ensure we get clean JSON outputs)
             decompression_result=$(decompress_file "$output_file" "$algorithm" "$temp_dir")
 
-            # Create JSON for this compression level
-            level_results=$(
-                cat << EOF
-{
-    "compression": $(echo "$compression_result" | jq 'del(.outputFile)'),
-    "decompression": $decompression_result
-}
-EOF
-            )
+            # Create JSON for this compression level using jq
+            level_results=$(jq -n \
+                --argjson compression "$(echo "$compression_result" | jq 'del(.outputFile)')" \
+                --argjson decompression "$decompression_result" \
+                '{
+                    compression: $compression,
+                    decompression: $decompression
+                }')
 
-            # Add this level's results to algorithm results
+            # Add this level's results to algorithm results - sanitize with jq
             algorithm_results=$(echo "$algorithm_results" | jq --argjson level_results "$level_results" --arg level "$level" '. + {($level): $level_results}')
         done
 
-        # Add this algorithm's results to overall results
+        # Add this algorithm's results to overall results - sanitize with jq
         results=$(echo "$results" | jq --argjson algorithm_results "$algorithm_results" --arg algorithm "$algorithm" '. + {($algorithm): $algorithm_results}')
     done
 
@@ -265,7 +276,7 @@ main() {
         # Test compression algorithms for the file
         file_results=$(test_compression_algorithms "$file")
 
-        # Add file results to overall JSON
+        # Add file results to overall JSON - sanitize with jq
         output_json=$(echo "$output_json" | jq --argjson file_results "$file_results" --arg filename "$(basename "$file")" '. + [{($filename): $file_results}]')
     done
 
