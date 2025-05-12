@@ -77,7 +77,7 @@ compress_file() {
     elif [ "$algorithm" = "zstd" ]; then
         { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -k -c -"$level" "$file" 2>&1 1>&3); } 3> "$output_file"
     else
-        echo "Unknown algorithm: $algorithm"
+        echo "Unknown algorithm: $algorithm" >&2
         exit 1
     fi
 
@@ -154,7 +154,7 @@ decompress_file() {
     elif [ "$algorithm" = "zstd" ]; then
         { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -d -c "$compressed_file" 2>&1 1>&3); } 3> "$output_file"
     else
-        echo "Unknown algorithm: $algorithm"
+        echo "Unknown algorithm: $algorithm" >&2
         exit 1
     fi
 
@@ -203,7 +203,7 @@ test_compression_algorithms() {
     filename=$(basename "$file")
     results="{}"
 
-    echo "Testing compression for file: $filename"
+    echo "Testing compression for file: $filename" >&2
 
     # Algorithms and their compression level ranges
     declare -A algorithms=(
@@ -213,12 +213,12 @@ test_compression_algorithms() {
         ["zstd"]="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19"
     ) # Process all algorithms
     for algorithm in "${!algorithms[@]}"; do
-        echo "  Algorithm: $algorithm"
+        echo "  Algorithm: $algorithm" >&2
         algorithm_results="{}"
 
         # Process all compression levels for the algorithm
         for level in ${algorithms[$algorithm]}; do
-            echo "    Compression level: $level"
+            echo "    Compression level: $level" >&2
 
             # Get compression results (ensure we get clean JSON outputs)
             compression_result=$(compress_file "$file" "$algorithm" "$level" "$temp_dir")
@@ -270,7 +270,7 @@ main() {
     # Process each file
     for file in "$@"; do
         if [ ! -f "$file" ]; then
-            echo "Error: file '$file' does not exist or is not a regular file."
+            echo "Error: file '$file' does not exist or is not a regular file." >&2
             continue
         fi
 
