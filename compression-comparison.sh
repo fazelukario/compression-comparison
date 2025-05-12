@@ -64,7 +64,7 @@ compress_file() {
     local compression_percentage
     local json_result
 
-    trap '_trap_DEBUG' ERR
+    trap '_trap_DEBUG' DEBUG
 
     output_file="${temp_dir}/$(basename "$file").${algorithm}"
 
@@ -144,7 +144,7 @@ decompress_file() {
     local max_mem
     local json_result
 
-    trap '_trap_DEBUG' ERR
+    trap '_trap_DEBUG' DEBUG
 
     output_file="${temp_dir}/decompressed_$(basename "$compressed_file")"
 
@@ -202,7 +202,7 @@ test_compression_algorithms() {
     local decompression_result
     local level_results
 
-    trap '_trap_DEBUG' ERR
+    trap '_trap_DEBUG' DEBUG
 
     temp_dir=$(mktemp -d)
     filename=$(basename "$file")
@@ -261,7 +261,7 @@ main() {
     local file_results
     local output_file
 
-    trap '_trap_DEBUG' ERR
+    trap '_trap_DEBUG' DEBUG
 
     # Check for required tools
     check_requirements
@@ -306,7 +306,7 @@ function _trap_DEBUG() {
     done
 }
 
-trap '_trap_DEBUG' ERR
+trap '_trap_DEBUG' DEBUG
 
 # Run main function with all arguments
 main "$@"
