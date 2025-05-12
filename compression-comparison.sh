@@ -202,7 +202,7 @@ test_compression_algorithms() {
     local decompression_result
     local level_results
 
-    trap '_trap_DEBUG' ERR
+    trap '_trap_DEBUG' DEBUG
 
     temp_dir=$(mktemp -d)
     filename=$(basename "$file")
