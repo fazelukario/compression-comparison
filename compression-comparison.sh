@@ -298,7 +298,7 @@ function _trap_DEBUG() {
     done
 }
 
-trap '_trap_DEBUG' DEBUG
+trap '_trap_DEBUG' ERE
 
 # Run main function with all arguments
 main "$@"
