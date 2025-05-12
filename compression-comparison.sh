@@ -295,18 +295,5 @@ main() {
     echo "Results saved to file: $output_file"
 }
 
-function _trap_DEBUG() {
-    echo "# $BASH_COMMAND"
-    while read -r -e -p "debug> " _command; do
-        if [ -n "$_command" ]; then
-            eval "$_command"
-        else
-            break
-        fi
-    done
-}
-
-trap '_trap_DEBUG' ERR
-
 # Run main function with all arguments
 main "$@"
