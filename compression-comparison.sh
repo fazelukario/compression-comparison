@@ -68,13 +68,14 @@ compress_file() {
 
     if [ "$algorithm" = "bz2" ]; then
         # Add -$level explicitly for compression level
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" bzip2 -k -c -"$level" "$file" > "$output_file" 2>&1)
+        # Сохраняем вывод команды time в одну переменную, а содержимое в другую
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" bzip2 -k -c -"$level" "$file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "gz" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -k -c -"$level" "$file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -k -c -"$level" "$file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "lz4" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -k -c -"$level" "$file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -k -c -"$level" "$file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "zstd" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -k -c -"$level" "$file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -k -c -"$level" "$file" 2>&1 1>&3); } 3> "$output_file"
     else
         echo "Unknown algorithm: $algorithm"
         exit 1
@@ -145,13 +146,13 @@ decompress_file() {
     output_file="${temp_dir}/decompressed_$(basename "$compressed_file")"
 
     if [ "$algorithm" = "bz2" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" bzip2 -d -c "$compressed_file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" bzip2 -d -c "$compressed_file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "gz" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -d -c "$compressed_file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" gzip -d -c "$compressed_file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "lz4" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -d -c "$compressed_file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" lz4 -d -c "$compressed_file" 2>&1 1>&3); } 3> "$output_file"
     elif [ "$algorithm" = "zstd" ]; then
-        time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -d -c "$compressed_file" > "$output_file" 2>&1)
+        { time_output=$(/usr/bin/time -f "%E %P %S %U %K %M" zstd -d -c "$compressed_file" 2>&1 1>&3); } 3> "$output_file"
     else
         echo "Unknown algorithm: $algorithm"
         exit 1
