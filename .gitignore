@@ -1,0 +1,7 @@
+# Test files and results
+test/
+results/
+
+# Python cache
+__pycache__
+*.py[cod]

@@ -282,7 +282,7 @@ main() {
     done
 
     # Create output JSON file
-    output_file="$(date +%Y-%m-%d-%H-%M-%S).json"
+    output_file="results/$(date +%Y-%m-%d-%H-%M-%S).json"
     echo "$output_json" | jq '.' > "$output_file"
 
     echo "Results saved to file: $output_file"
