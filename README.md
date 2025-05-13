@@ -52,7 +52,7 @@ Ensure the following CLI tools are installed and available in your `PATH`:
 
 On Debian/Ubuntu:
 
-```powershell
+```shell
 sudo apt-get update
 sudo apt-get install -y bzip2 gzip lz4 zstd time jq
 ```
@@ -66,7 +66,7 @@ sudo apt-get install -y bzip2 gzip lz4 zstd time jq
 
 Install Python dependencies:
 
-```powershell
+```shell
 pip install matplotlib numpy pandas
 ```
 
@@ -77,11 +77,11 @@ pip install matplotlib numpy pandas
 ### Compression Benchmark
 
 1. Make the main script executable (if on Unix-like OS):
-   ```powershell
+   ```shell
    chmod +x compression-comparison.sh
    ```
 2. Run the benchmark for one or more files:
-   ```powershell
+   ```shell
    ./compression-comparison.sh path/to/file1 path/to/file2
    ```
 3. Results will be written as timestamped JSON under `results/`.
@@ -91,12 +91,12 @@ pip install matplotlib numpy pandas
 Use the Python scripts in `data-visualization/` to generate plots and HTML summaries from JSON output.
 
 1. **Analyze compression data** (produces in-depth HTML summary):
-   ```powershell
+   ```shell
    cd data-visualization
    python analyze_compression.py ../results/YYYY-MM-DD-HH-MM-SS.json
    ```
 2. **Visualize JSON data** (generates individual charts and an HTML report):
-   ```powershell
+   ```shell
    python visualize.py ../results/YYYY-MM-DD-HH-MM-SS.json
    ```
 3. **Alternative scripts**:
