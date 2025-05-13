@@ -53,8 +53,8 @@ Ensure the following CLI tools are installed and available in your `PATH`:
 On Debian/Ubuntu:
 
 ```shell
-sudo apt-get update
-sudo apt-get install -y bzip2 gzip lz4 zstd time jq
+sudo apt update
+sudo apt install -y bzip2 gzip lz4 zstd time jq
 ```
 
 ### Python (for Visualization)
